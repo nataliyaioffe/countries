@@ -29,7 +29,9 @@ class App extends Component {
           region: country.region.value.trim(),
           incomeLevel: country.incomeLevel.value,
           latitude: country.latitude,
-          longitude: country.longitude
+          longitude: country.longitude,
+          NShemisphere: country.latitude > 0 ? "Northern" : "Southern",
+          WEhemisphere: country.longitude > 0 ? "Eastern" : "Western"
         });
       }
     });
@@ -91,12 +93,23 @@ class App extends Component {
     });
   };
 
+  getCountriesByHemisphere = e => {
+    const hemisphere = e.target.innerText;
+    const countries = [...this.state.countries];
+    const countriesByHemisphere = countries.filter((country)=> {
+      return country.NShemisphere === hemisphere || country.WEhemisphere === hemisphere
+    })
+    this.setState({
+      filteredCountries: countriesByHemisphere
+    });
+  }
+
   render() {
     const countries = [...this.state.countries];
     const regions = [];
     const incomeLevels = [];
     // Loop through countries array
-    countries.forEach((country) => {
+    countries.forEach(country => {
       const region = country.region;
       const incomeLevel = country.incomeLevel;
       // IF it doesn't already exist in the regions/incomeLevels array, push into respective array
@@ -104,35 +117,56 @@ class App extends Component {
       if (!incomeLevels.includes(incomeLevel)) incomeLevels.push(incomeLevel);
     });
 
+    // REGION BUTTONS MAP
+    const regionBtns = regions.map((region, i) => {
+      return (
+        <button key={i} onClick={this.getCountriesByRegion}>
+          {region}
+        </button>
+      );
+    });
 
+    // INCOME BUTTONS MAP
+    const incomeBtns = incomeLevels.map((incomeLevel, i) => {
+      return (
+        <button key={i} onClick={this.getCountriesByIncomeLevel}>
+          {incomeLevel}
+        </button>
+      );
+    });
+
+    // ALPHABET BUTTONS MAP
     const alphabet = "abcdefghijklmnopqrstuvwxyz";
     const alphaLetters = alphabet.split("");
+
+    const letterBtns = alphaLetters.map((letter, i) => {
+      return (
+        <button key={`${i}${letter}`} onClick={this.getCountriesByLetter}>
+          {letter}
+        </button>
+      );
+    });
+
+
+    const hemispheres = ["Northern", "Southern", "Western", "Eastern"];
+
+    const hemisphereBtns = hemispheres.map((hemisphere, i) => {
+      return <button key={`${i}${hemisphere}`} onClick={this.getCountriesByHemisphere}>
+        {hemisphere}
+      </button>
+    })
+    
 
     return (
       <div className="App">
         <div className="wrapper">
-          {alphaLetters.map((letter, i) => {
-            return (
-              <button key={`${i}${letter}`} onClick={this.getCountriesByLetter}>
-                {letter}
-              </button>
-            );
-          })}
+          {/* {hemispheres.map()} */}
 
-          {regions.map((region, i) => {
-            return (
-              <button key={i} onClick={this.getCountriesByRegion}>
-                {region}
-              </button>
-            );
-          })}
-          {incomeLevels.map((incomeLevel, i) => {
-            return (
-              <button key={i} onClick={this.getCountriesByIncomeLevel}>
-                {incomeLevel}
-              </button>
-            );
-          })}
+          {letterBtns}
+          {regionBtns}
+          {incomeBtns}
+          {hemisphereBtns}
+
           <div className="countries">
             {this.state.filteredCountries && (
               <p>
