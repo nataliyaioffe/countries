@@ -16,7 +16,7 @@ class App extends Component {
 
   sortData = data => {
     // Create copy of state / new countries array
-    const countries = this.state.countries;
+    const countries = [];
     // Loop through result from API,
     // Validate IF country is a country(rather than aggregate/region)
     // Push that country's info into the new countries array
@@ -27,10 +27,16 @@ class App extends Component {
           name: country.name,
           capital: country.capitalCity,
           region: country.region.value.trim(),
-          incomeLevel: country.incomeLevel.value
+          incomeLevel: country.incomeLevel.value,
+          latitude: country.latitude,
+          longitude: country.longitude
         });
       }
     });
+
+    // alphabetize countries
+    countries.sort((a, b) => (a.name > b.name ? 1 : b.name > a.name ? -1 : 0));
+
     // replace state with new countries array
     this.setState({
       countries: countries
@@ -39,6 +45,7 @@ class App extends Component {
 
   getData = () => {
     axios
+      // .get("http://api.worldbank.org/v2/countries/?format=json", {
       .get("http://api.worldbank.org/v2/countries/?format=json", {
         params: {
           per_page: "500"
@@ -47,11 +54,12 @@ class App extends Component {
       .then(res => {
         const data = res.data[1];
         this.sortData(data);
+        console.log(data);
       });
   };
 
   getCountriesByRegion = e => {
-    const countries = this.state.countries;
+    const countries = [...this.state.countries];
     const region = e.target.innerText;
     const countriesInRegion = countries.filter(
       country => country.region === region
@@ -62,8 +70,8 @@ class App extends Component {
   };
 
   getCountriesByLetter = e => {
-    const letter = e.target.innerText;
-    const countries = this.state.countries;
+    const letter = e.target.innerText.toUpperCase();
+    const countries = [...this.state.countries];
     const countriesByLetter = countries.filter(country =>
       country.name.startsWith(letter)
     );
@@ -72,98 +80,44 @@ class App extends Component {
     });
   };
 
-  render() {
-    const countries = this.state.countries;
-    const regions = [];
-    // Loop through countries array
-    countries.forEach((country, i) => {
-      const region = country.region;
-      // IF it doesn't already exist in the regions array, push the country's region into the regions array
-      if (regions.includes(region) === false) regions.push(region);
+  getCountriesByIncomeLevel = e => {
+    const incomeLevel = e.target.innerText;
+    const countries = [...this.state.countries];
+    const countriesByIncomeLevel = countries.filter(
+      country => country.incomeLevel === incomeLevel
+    );
+    this.setState({
+      filteredCountries: countriesByIncomeLevel
     });
+  };
+
+  render() {
+    const countries = [...this.state.countries];
+    const regions = [];
+    const incomeLevels = [];
+    // Loop through countries array
+    countries.forEach((country) => {
+      const region = country.region;
+      const incomeLevel = country.incomeLevel;
+      // IF it doesn't already exist in the regions/incomeLevels array, push into respective array
+      if (!regions.includes(region)) regions.push(region);
+      if (!incomeLevels.includes(incomeLevel)) incomeLevels.push(incomeLevel);
+    });
+
+
+    const alphabet = "abcdefghijklmnopqrstuvwxyz";
+    const alphaLetters = alphabet.split("");
 
     return (
       <div className="App">
         <div className="wrapper">
-          <button className="letter" onClick={this.getCountriesByLetter}>
-            A
-          </button>
-          <button className="letter" onClick={this.getCountriesByLetter}>
-            B
-          </button>
-          <button className="letter" onClick={this.getCountriesByLetter}>
-            C
-          </button>
-          <button className="letter" onClick={this.getCountriesByLetter}>
-            D
-          </button>
-          <button className="letter" onClick={this.getCountriesByLetter}>
-            E
-          </button>
-          <button className="letter" onClick={this.getCountriesByLetter}>
-            F
-          </button>
-          <button className="letter" onClick={this.getCountriesByLetter}>
-            G
-          </button>
-          <button className="letter" onClick={this.getCountriesByLetter}>
-            H
-          </button>
-          <button className="letter" onClick={this.getCountriesByLetter}>
-            {" "}
-            I
-          </button>
-          <button className="letter" onClick={this.getCountriesByLetter}>
-            J
-          </button>
-          <button className="letter" onClick={this.getCountriesByLetter}>
-            K
-          </button>
-          <button className="letter" onClick={this.getCountriesByLetter}>
-            L
-          </button>
-          <button className="letter" onClick={this.getCountriesByLetter}>
-            M
-          </button>
-          <button className="letter" onClick={this.getCountriesByLetter}>
-            N
-          </button>
-          <button className="letter" onClick={this.getCountriesByLetter}>
-            O
-          </button>
-          <button className="letter" onClick={this.getCountriesByLetter}>
-            P
-          </button>
-          <button className="letter" onClick={this.getCountriesByLetter}>
-            Q
-          </button>
-          <button className="letter" onClick={this.getCountriesByLetter}>
-            R
-          </button>
-          <button className="letter" onClick={this.getCountriesByLetter}>
-            S
-          </button>
-          <button className="letter" onClick={this.getCountriesByLetter}>
-            T
-          </button>
-          <button className="letter" onClick={this.getCountriesByLetter}>
-            U
-          </button>
-          <button className="letter" onClick={this.getCountriesByLetter}>
-            V
-          </button>
-          <button className="letter" onClick={this.getCountriesByLetter}>
-            W
-          </button>
-          <button className="letter" onClick={this.getCountriesByLetter}>
-            X
-          </button>
-          <button className="letter" onClick={this.getCountriesByLetter}>
-            Y
-          </button>
-          <button className="letter" onClick={this.getCountriesByLetter}>
-            Z
-          </button>
+          {alphaLetters.map((letter, i) => {
+            return (
+              <button key={`${i}${letter}`} onClick={this.getCountriesByLetter}>
+                {letter}
+              </button>
+            );
+          })}
 
           {regions.map((region, i) => {
             return (
@@ -172,11 +126,31 @@ class App extends Component {
               </button>
             );
           })}
+          {incomeLevels.map((incomeLevel, i) => {
+            return (
+              <button key={i} onClick={this.getCountriesByIncomeLevel}>
+                {incomeLevel}
+              </button>
+            );
+          })}
           <div className="countries">
-            {/* /// DEFAULT == show ALL countries */}
+            {this.state.filteredCountries && (
+              <p>
+                {this.state.filteredCountries.length} Countries Match Your
+                Search
+              </p>
+            )}
+            {!this.state.filteredCountries && (
+              <p>There are {this.state.countries.length} countries</p>
+            )}
+
+            {!this.state.filteredCountries &&
+              this.state.countries.map((country, i) => (
+                <Country key={i} country={country} />
+              ))}
+
             {/* /// ADD FILTER BY incomeLevel */}
-            {/* /// ADD POPULATION SOMEHOW?????? */}
-            {/* /// THEN ADD FILTER BY POPULATION */}
+
             {this.state.filteredCountries &&
               this.state.filteredCountries.map((country, i) => (
                 <Country key={i} country={country} />
@@ -189,15 +163,3 @@ class App extends Component {
 }
 
 export default App;
-
-{
-  /* // {this.state.countries !== 0 */
-}
-//   ? this.state.region.map((country, i) => {
-//       return <Country key={i} country={country} />;
-//     })
-//   : this.state.countries !== 0
-//   ? this.state.countriesByLetter.map((country, i) => {
-//       return <Country key={i} country={country} />;
-//     })
-//   : null}

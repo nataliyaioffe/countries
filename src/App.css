@@ -15,9 +15,9 @@
     text-align: center;
     width: calc(33.333% - 15px);
     height: 200px;
-    /* margin: 0 30px; */
+    margin: 0 30px;
     border: 1px solid black;
-}
+ }
 
 .countryName {
     font-weight: bold;
