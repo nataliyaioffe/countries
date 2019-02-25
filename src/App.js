@@ -48,7 +48,6 @@ class App extends Component {
 
   getData = () => {
     axios
-      // .get("http://api.worldbank.org/v2/countries/?format=json", {
       .get("http://api.worldbank.org/v2/countries/?format=json", {
         params: {
           per_page: "500"
@@ -57,8 +56,25 @@ class App extends Component {
       .then(res => {
         const data = res.data[1];
         this.sortData(data);
-        // console.log(data);
       });
+  };
+
+  removeDupes = (newFilteredCountries, comp) => {
+    // spread new filtered countries into state (which will create dupes depending on search criteria)
+    const dupes = [...this.state.filteredCountries, ...newFilteredCountries];
+    // remove duplicates
+    const filteredCountries = dupes
+      .map(e => e[comp])
+      .map((e, i, final) => final.indexOf(e) === i && i)
+      .filter(e => dupes[e])
+      .map(e => dupes[e]);
+    return filteredCountries;
+  };
+
+  setFilteredToState = filtered => {
+    this.setState({
+      filteredCountries: filtered
+    });
   };
 
   getCountriesByRegion = e => {
@@ -67,19 +83,8 @@ class App extends Component {
     const countriesInRegion = countries.filter(
       country => country.region === region
     );
-
-    const nataliya = [...this.state.filteredCountries, ...countriesInRegion];
-
-    // const obj = {};
-
-    // const newNataliya = nataliya.map((country, i) => {
-    //   obj[country.name] = country;
-    //   if (obj[country.name] = country) return country
-    // });
-
-    this.setState({
-      filteredCountries: [...this.state.filteredCountries, ...countriesInRegion]
-    });
+    const filteredCountries = this.removeDupes(countriesInRegion, "name");
+    this.setFilteredToState(filteredCountries);
   };
 
   getCountriesByLetter = e => {
@@ -88,9 +93,8 @@ class App extends Component {
     const countriesByLetter = countries.filter(country =>
       country.name.startsWith(letter)
     );
-    this.setState({
-      filteredCountries: [...this.state.filteredCountries, ...countriesByLetter]
-    });
+    const filteredCountries = this.removeDupes(countriesByLetter, "name");
+    this.setFilteredToState(filteredCountries);
   };
 
   getCountriesByIncomeLevel = e => {
@@ -99,12 +103,8 @@ class App extends Component {
     const countriesByIncomeLevel = countries.filter(
       country => country.incomeLevel === incomeLevel
     );
-    this.setState({
-      filteredCountries: [
-        ...this.state.filteredCountries,
-        ...countriesByIncomeLevel
-      ]
-    });
+    const filteredCountries = this.removeDupes(countriesByIncomeLevel, "name");
+    this.setFilteredToState(filteredCountries);
   };
 
   getCountriesByHemisphere = e => {
@@ -116,12 +116,8 @@ class App extends Component {
         country.WEhemisphere === hemisphere
       );
     });
-    this.setState({
-      filteredCountries: [
-        ...this.state.filteredCountries,
-        ...countriesByHemisphere
-      ]
-    });
+    const filteredCountries = this.removeDupes(countriesByHemisphere, "name");
+    this.setFilteredToState(filteredCountries);
   };
 
   render() {
@@ -205,8 +201,6 @@ class App extends Component {
               this.state.countries.map((country, i) => (
                 <Country key={i} country={country} />
               ))}
-
-            {/* /// ADD FILTER BY incomeLevel */}
 
             {this.state.filteredCountries &&
               this.state.filteredCountries.map((country, i) => (

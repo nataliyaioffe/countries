@@ -6,6 +6,7 @@ class Country extends Component {
       <div className="country">
         <p className="countryName">{this.props.country.name}</p>
         <p>Capital City: {this.props.country.capital}</p>
+        <p>Region: {this.props.country.region}</p>
         <p>Income Level: {this.props.country.incomeLevel}</p>
         <p>Longitude {this.props.country.longitude}</p>
         <p>Latitude {this.props.country.latitude}</p>
