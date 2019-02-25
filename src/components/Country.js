@@ -29,9 +29,9 @@ class Country extends Component {
           <span>{this.props.country.name}</span>
         </p>
 
-        {this.state.clicked &&
-            <CountryDetails key={this.props.key} country={this.props.country} />
-          }
+        {this.state.clicked && (
+          <CountryDetails key={this.props.key} country={this.props.country} />
+        )}
       </div>
     );
   }
