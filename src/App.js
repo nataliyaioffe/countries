@@ -77,20 +77,24 @@ class App extends Component {
       const updatedChecked = { ...this.state.checked, [all]: true };
       this.updateState(allCountries, updatedChecked);
     } else {
-      this.removeCriteria(all);
+      this.removeCriteria(all, e);
     }
   };
 
   // *** SEARCH BY LETTER ***
   getCountriesByLetter = e => {
-    const letter = e.target.innerText.toUpperCase();
-    const updatedChecked = { ...this.state.checked, [letter]: true };
-    const countries = [...this.state.countries];
-    const countriesByLetter = countries.filter(country =>
-      country.name.startsWith(letter)
-    );
-    const filteredCountries = this.removeDupes(countriesByLetter, "name");
-    this.updateState(filteredCountries, updatedChecked);
+    const letter = e.target.value.toUpperCase();
+    if (e.target.checked) {
+      const updatedChecked = { ...this.state.checked, [letter]: true };
+      const countries = [...this.state.countries];
+      const countriesByLetter = countries.filter(country =>
+        country.name.startsWith(letter)
+      );
+      const filteredCountries = this.removeDupes(countriesByLetter, "name");
+      this.updateState(filteredCountries, updatedChecked);
+    } else {
+      this.removeCriteria(letter, e);
+    }
   };
 
   // *** SEARCH BY REGION ***
@@ -106,7 +110,6 @@ class App extends Component {
       const filteredCountries = this.removeDupes(countriesInRegion, "name");
       this.updateState(filteredCountries, updatedChecked);
     } else {
-      console.log("hi");
       this.removeCriteria(region, e);
     }
   };
@@ -125,7 +128,6 @@ class App extends Component {
       );
       this.updateState(filteredCountries, updatedChecked);
     } else {
-      console.log("hi");
       this.removeCriteria(incomeLevel, e);
     }
   };
@@ -169,14 +171,12 @@ class App extends Component {
     // console.log(checkedRegions, "checked Regions");
 
     const countriesToRemove = filteredCountries.filter(country => {
-      if (checkedRegions[country[criteriaHeadline]]) return country;
+      return checkedRegions[country[criteriaHeadline]]
     });
     // console.log(countriesToRemove, "countries to remove");
 
     const newFilteredCountries = filteredCountries.filter((country, i) => {
-      if (countriesToRemove.includes(country.name)) {
-        return country;
-      }
+      return countriesToRemove.includes(country.name)
     });
     // console.log(newFilteredCountries, "new filtered");
 
@@ -226,10 +226,9 @@ class App extends Component {
     // render input / labels for every region
     const regionBtns = regions.map((region, i) => {
       return (
-        <div key={`${i}${region}`}>
+        <div key={`${i}${region}`} className="nataliya">
           <label htmlFor="region">{region}</label>
           <input
-            className="region nataliya"
             onClick={this.getCountriesByRegion}
             type="checkbox"
             name="region"
@@ -243,7 +242,7 @@ class App extends Component {
     // render input / labels for every income level
     const incomeBtns = incomeLevels.map((incomeLevel, i) => {
       return (
-        <div key={`${i}${incomeLevel}`}>
+        <div key={`${i}${incomeLevel}`} className="nataliya">
           <label htmlFor={incomeLevel}>{incomeLevel}</label>
           <input
             className="nataliya"
@@ -263,9 +262,16 @@ class App extends Component {
 
     const letterBtns = alphaLetters.map((letter, i) => {
       return (
-        <button key={`${i}${letter}`} onClick={this.getCountriesByLetter}>
-          {letter}
-        </button>
+        <div key={`${i}${letter}`} className="nataliya">
+          <label htmlFor={letter}>{letter}</label>
+          <input
+            className="nataliya"
+            onClick={this.getCountriesByLetter}
+            type="checkbox"
+            name={letter}
+            value={letter}
+          />
+        </div>
       );
     });
 
@@ -274,7 +280,7 @@ class App extends Component {
     const hemispheres = ["Northern", "Southern", "Western", "Eastern"];
     const hemisphereBtns = hemispheres.map((hemisphere, i) => {
       return (
-        <div key={`${i}${hemisphere}`}>
+        <div key={`${i}${hemisphere}`} className="nataliya">
           <label htmlFor={hemisphere}>{hemisphere}</label>
           <input
             className="nataliya"
@@ -304,9 +310,10 @@ class App extends Component {
             />
           </div>
           {/* ALPHABET Choices */}
-          <div className="searchBy">
+          <div className="searchByAlphabet">
             <span className="criteriaHeadline">Search by Alphabet: </span>
-            {letterBtns}
+            <div className="letters">{letterBtns}</div>
+            
           </div>
           {/* REGION Choices */}
           <div className="searchBy">
@@ -345,6 +352,11 @@ class App extends Component {
 export default App;
 
 /// OLD ------------------------------
+
+// <button key={`${i}${letter}`} onClick={this.getCountriesByLetter}>
+//   {letter}
+// </button>
+
 // <button key={i} onClick={this.getCountriesByRegion}>
 //   {region}
 // </button>
