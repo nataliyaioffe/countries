@@ -11,10 +11,28 @@ class App extends Component {
       filteredCountries: []
     };
   }
+
   componentDidMount() {
     this.getData();
   }
 
+  // *** API CALL ***
+  getData = () => {
+    // get data
+    axios
+      .get("http://api.worldbank.org/v2/countries/?format=json", {
+        params: {
+          per_page: "500"
+        }
+      })
+      // then pass result to sort function
+      .then(res => {
+        const data = res.data[1];
+        this.sortData(data);
+      });
+  };
+
+  // *** SORT RESULT FROM API CALL ***
   sortData = data => {
     // Create copy of state / new countries array
     const countries = [];
@@ -46,47 +64,7 @@ class App extends Component {
     });
   };
 
-  getData = () => {
-    axios
-      .get("http://api.worldbank.org/v2/countries/?format=json", {
-        params: {
-          per_page: "500"
-        }
-      })
-      .then(res => {
-        const data = res.data[1];
-        this.sortData(data);
-      });
-  };
-
-  removeDupes = (newFilteredCountries, comp) => {
-    // spread new filtered countries into state (which will create dupes depending on search criteria)
-    const dupes = [...this.state.filteredCountries, ...newFilteredCountries];
-    // remove duplicates
-    const filteredCountries = dupes
-      .map(e => e[comp])
-      .map((e, i, final) => final.indexOf(e) === i && i)
-      .filter(e => dupes[e])
-      .map(e => dupes[e]);
-    return filteredCountries;
-  };
-
-  setFilteredToState = filtered => {
-    this.setState({
-      filteredCountries: filtered
-    });
-  };
-
-  getCountriesByRegion = e => {
-    const countries = [...this.state.countries];
-    const region = e.target.innerText;
-    const countriesInRegion = countries.filter(
-      country => country.region === region
-    );
-    const filteredCountries = this.removeDupes(countriesInRegion, "name");
-    this.setFilteredToState(filteredCountries);
-  };
-
+  // *** SEARCH BY LETTER ***
   getCountriesByLetter = e => {
     const letter = e.target.innerText.toUpperCase();
     const countries = [...this.state.countries];
@@ -97,6 +75,18 @@ class App extends Component {
     this.setFilteredToState(filteredCountries);
   };
 
+  // *** SEARCH BY REGION ***
+  getCountriesByRegion = e => {
+    const countries = [...this.state.countries];
+    const region = e.target.innerText;
+    const countriesInRegion = countries.filter(
+      country => country.region === region
+    );
+    const filteredCountries = this.removeDupes(countriesInRegion, "name");
+    this.setFilteredToState(filteredCountries);
+  };
+
+  // *** SEARCH BY INCOME LEVEL ***
   getCountriesByIncomeLevel = e => {
     const incomeLevel = e.target.innerText;
     const countries = [...this.state.countries];
@@ -107,6 +97,7 @@ class App extends Component {
     this.setFilteredToState(filteredCountries);
   };
 
+  // *** SEARCH BY HEMISPHERE ***
   getCountriesByHemisphere = e => {
     const hemisphere = e.target.innerText;
     const countries = [...this.state.countries];
@@ -120,6 +111,25 @@ class App extends Component {
     this.setFilteredToState(filteredCountries);
   };
 
+  // *** REMOVING DUPLICATES ***
+  removeDupes = (newFilteredCountries, comp) => {
+    const dupes = [...this.state.filteredCountries, ...newFilteredCountries];
+    const filteredCountries = dupes
+      .map(e => e[comp])
+      .map((e, i, final) => final.indexOf(e) === i && i)
+      .filter(e => dupes[e])
+      .map(e => dupes[e]);
+    return filteredCountries;
+  };
+
+  // ***** SET FILTERED COUNTRIES TO STATE *****
+  setFilteredToState = filtered => {
+    this.setState({
+      filteredCountries: filtered
+    });
+  };
+
+  // ********************** RENDER **********************
   render() {
     const countries = [...this.state.countries];
     const regions = [];
@@ -133,7 +143,7 @@ class App extends Component {
       if (!incomeLevels.includes(incomeLevel)) incomeLevels.push(incomeLevel);
     });
 
-    // REGION BUTTONS MAP
+    // *** REGION BUTTONS MAP ***
     const regionBtns = regions.map((region, i) => {
       return (
         <button key={i} onClick={this.getCountriesByRegion}>
@@ -142,7 +152,7 @@ class App extends Component {
       );
     });
 
-    // INCOME BUTTONS MAP
+    // *** INCOME BUTTONS MAP ***
     const incomeBtns = incomeLevels.map((incomeLevel, i) => {
       return (
         <button key={i} onClick={this.getCountriesByIncomeLevel}>
@@ -151,7 +161,7 @@ class App extends Component {
       );
     });
 
-    // ALPHABET BUTTONS MAP
+    // *** ALPHABET BUTTONS MAP ***
     const alphabet = "abcdefghijklmnopqrstuvwxyz";
     const alphaLetters = alphabet.split("");
 
@@ -163,8 +173,8 @@ class App extends Component {
       );
     });
 
+    // *** HEMISPHERE BUTTONS MAP ***
     const hemispheres = ["Northern", "Southern", "Western", "Eastern"];
-
     const hemisphereBtns = hemispheres.map((hemisphere, i) => {
       return (
         <button
@@ -175,12 +185,10 @@ class App extends Component {
         </button>
       );
     });
-
+    // ********************** RETURN **********************
     return (
       <div className="App">
         <div className="wrapper">
-          {/* {hemispheres.map()} */}
-
           {letterBtns}
           {regionBtns}
           {incomeBtns}
