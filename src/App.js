@@ -54,14 +54,15 @@ class App extends Component {
         });
       }
     });
-
-    // alphabetize countries
-    countries.sort((a, b) => (a.name > b.name ? 1 : b.name > a.name ? -1 : 0));
-
     // replace state with new countries array
     this.setState({
       countries: countries
     });
+  };
+
+  // *** ALPHABETIZE ***
+  alphabetize = array => {
+    array.sort((a, b) => (a.name > b.name ? 1 : b.name > a.name ? -1 : 0));
   };
 
   // *** SEARCH BY LETTER ***
@@ -77,8 +78,8 @@ class App extends Component {
 
   // *** SEARCH BY REGION ***
   getCountriesByRegion = e => {
-    const countries = [...this.state.countries];
     const region = e.target.innerText;
+    const countries = [...this.state.countries];
     const countriesInRegion = countries.filter(
       country => country.region === region
     );
@@ -99,7 +100,8 @@ class App extends Component {
 
   // *** SEARCH BY HEMISPHERE ***
   getCountriesByHemisphere = e => {
-    const hemisphere = e.target.innerText;
+    console.log(e);
+    const hemisphere = e.target.value;
     const countries = [...this.state.countries];
     const countriesByHemisphere = countries.filter(country => {
       return (
@@ -107,8 +109,26 @@ class App extends Component {
         country.WEhemisphere === hemisphere
       );
     });
-    const filteredCountries = this.removeDupes(countriesByHemisphere, "name");
-    this.setFilteredToState(filteredCountries);
+    if (e.target.checked) {
+      const filteredCountries = this.removeDupes(countriesByHemisphere, "name");
+      this.setFilteredToState(filteredCountries);
+    } else {
+      this.removeCriteria(hemisphere, e);
+    }
+  };
+
+  // *** REMOVING SEARCH CRITERIA ***
+
+  removeCriteria = (criteriaToRemove, e) => {
+    console.log("removing");
+    const filteredCountries = [...this.state.filteredCountries];
+    const newFilteredCountries = filteredCountries.filter(country => {
+      return !country.hemisphere === criteriaToRemove;
+    });
+
+    this.setState({
+      filteredCountries: newFilteredCountries
+    });
   };
 
   // *** REMOVING DUPLICATES ***
@@ -124,6 +144,7 @@ class App extends Component {
 
   // ***** SET FILTERED COUNTRIES TO STATE *****
   setFilteredToState = filtered => {
+    this.alphabetize(filtered);
     this.setState({
       filteredCountries: filtered
     });
@@ -177,38 +198,68 @@ class App extends Component {
     const hemispheres = ["Northern", "Southern", "Western", "Eastern"];
     const hemisphereBtns = hemispheres.map((hemisphere, i) => {
       return (
-        <button
-          key={`${i}${hemisphere}`}
-          onClick={this.getCountriesByHemisphere}
-        >
-          {hemisphere}
-        </button>
+        <form action="" key={`${i}${hemisphere}`}>
+          <label htmlFor={hemisphere}>{hemisphere}</label>
+          <input
+            className="nataliya"
+            onClick={this.getCountriesByHemisphere}
+            type="checkbox"
+            name={hemisphere}
+            value={hemisphere}
+          />
+        </form>
+
+        // <button
+        //   key={`${i}${hemisphere}`}
+        //   onClick={this.getCountriesByHemisphere}
+        // >
+        //   {hemisphere}
+        // </button>
       );
     });
     // ********************** RETURN **********************
     return (
       <div className="App">
         <div className="wrapper">
-          {letterBtns}
-          {regionBtns}
-          {incomeBtns}
-          {hemisphereBtns}
+          <div className="searchBy">
+            <p>
+              <span className="criteriaHeadline">Search by Alphabet:</span>{" "}
+              {letterBtns}
+            </p>
+          </div>
+          <div className="searchBy">
+            <p>
+              <span className="criteriaHeadline">Search by Region: </span>
+              {regionBtns}
+            </p>
+          </div>
+          <div className="searchBy">
+            <p>
+              <span className="criteriaHeadline">Search by Income Level: </span>
+              {incomeBtns}
+            </p>
+          </div>
+          <div className="searchBy">
+            <p>
+              <span className="criteriaHeadline">Search by Hemisphere: </span>
+              {hemisphereBtns}
+            </p>
+          </div>
+
+          {this.state.filteredCountries && (
+            <p className="resultsInfo">
+              {this.state.filteredCountries.length} Countries Match Your Search
+            </p>
+          )}
+          {!this.state.filteredCountries && (
+            <p>There are {this.state.countries.length} countries</p>
+          )}
 
           <div className="countries">
-            {this.state.filteredCountries && (
-              <p>
-                {this.state.filteredCountries.length} Countries Match Your
-                Search
-              </p>
-            )}
-            {!this.state.filteredCountries && (
-              <p>There are {this.state.countries.length} countries</p>
-            )}
-
-            {!this.state.filteredCountries &&
+            {/* {!this.state.filteredCountries &&
               this.state.countries.map((country, i) => (
                 <Country key={i} country={country} />
-              ))}
+              ))} */}
 
             {this.state.filteredCountries &&
               this.state.filteredCountries.map((country, i) => (
