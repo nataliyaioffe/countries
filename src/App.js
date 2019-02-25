@@ -7,7 +7,8 @@ class App extends Component {
   constructor() {
     super();
     this.state = {
-      countries: []
+      countries: [],
+      filteredCountries: []
     };
   }
   componentDidMount() {
@@ -56,7 +57,7 @@ class App extends Component {
       .then(res => {
         const data = res.data[1];
         this.sortData(data);
-        console.log(data);
+        // console.log(data);
       });
   };
 
@@ -66,8 +67,18 @@ class App extends Component {
     const countriesInRegion = countries.filter(
       country => country.region === region
     );
+
+    const nataliya = [...this.state.filteredCountries, ...countriesInRegion];
+
+    // const obj = {};
+
+    // const newNataliya = nataliya.map((country, i) => {
+    //   obj[country.name] = country;
+    //   if (obj[country.name] = country) return country
+    // });
+
     this.setState({
-      filteredCountries: countriesInRegion
+      filteredCountries: [...this.state.filteredCountries, ...countriesInRegion]
     });
   };
 
@@ -78,7 +89,7 @@ class App extends Component {
       country.name.startsWith(letter)
     );
     this.setState({
-      filteredCountries: countriesByLetter
+      filteredCountries: [...this.state.filteredCountries, ...countriesByLetter]
     });
   };
 
@@ -89,20 +100,29 @@ class App extends Component {
       country => country.incomeLevel === incomeLevel
     );
     this.setState({
-      filteredCountries: countriesByIncomeLevel
+      filteredCountries: [
+        ...this.state.filteredCountries,
+        ...countriesByIncomeLevel
+      ]
     });
   };
 
   getCountriesByHemisphere = e => {
     const hemisphere = e.target.innerText;
     const countries = [...this.state.countries];
-    const countriesByHemisphere = countries.filter((country)=> {
-      return country.NShemisphere === hemisphere || country.WEhemisphere === hemisphere
-    })
-    this.setState({
-      filteredCountries: countriesByHemisphere
+    const countriesByHemisphere = countries.filter(country => {
+      return (
+        country.NShemisphere === hemisphere ||
+        country.WEhemisphere === hemisphere
+      );
     });
-  }
+    this.setState({
+      filteredCountries: [
+        ...this.state.filteredCountries,
+        ...countriesByHemisphere
+      ]
+    });
+  };
 
   render() {
     const countries = [...this.state.countries];
@@ -147,15 +167,18 @@ class App extends Component {
       );
     });
 
-
     const hemispheres = ["Northern", "Southern", "Western", "Eastern"];
 
     const hemisphereBtns = hemispheres.map((hemisphere, i) => {
-      return <button key={`${i}${hemisphere}`} onClick={this.getCountriesByHemisphere}>
-        {hemisphere}
-      </button>
-    })
-    
+      return (
+        <button
+          key={`${i}${hemisphere}`}
+          onClick={this.getCountriesByHemisphere}
+        >
+          {hemisphere}
+        </button>
+      );
+    });
 
     return (
       <div className="App">
